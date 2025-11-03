@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Node modules (if JavaScript components exist)
+node_modules/
+
+# Environment
+.env
+
+# Planning materials
+PROMPT-*
+
+# Reference folder
+rust-test-and-coverage/
