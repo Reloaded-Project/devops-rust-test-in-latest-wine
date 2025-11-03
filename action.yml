@@ -129,6 +129,9 @@ runs:
       shell: bash
       working-directory: ${{ inputs.rust-project-path }}
       if: contains(inputs.target, 'pc-windows-gnu')
+      env:
+        CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUNNER: wine
+        CARGO_TARGET_I686_PC_WINDOWS_GNU_RUNNER: wine
       run: |
         echo "Testing GNU target: ${{ inputs.target }}"
         cargo +${{ inputs.rust-toolchain }} test --target "${{ inputs.target }}" \
@@ -140,6 +143,9 @@ runs:
       if: inputs.use-xwin == 'true' && contains(inputs.target, 'pc-windows-msvc')
       shell: bash
       working-directory: ${{ inputs.rust-project-path }}
+      env:
+        CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUNNER: wine
+        CARGO_TARGET_I686_PC_WINDOWS_MSVC_RUNNER: wine
       run: |
         echo "Testing MSVC target: ${{ inputs.target }}"
         cargo +${{ inputs.rust-toolchain }} xwin test --target "${{ inputs.target }}" \
