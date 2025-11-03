@@ -1,0 +1,142 @@
+name: 'Test Rust Windows Projects with Wine'
+description: 'Runs tests for Rust Windows projects on Linux using Wine'
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  rust-project-path:
+    description: 'Path to the Rust project'
+    required: false
+    default: '.'
+  rust-toolchain:
+    description: 'Rust toolchain to use for building and testing (e.g., stable, nightly, 1.75.0, nightly-2024-02-08)'
+    required: false
+    default: 'stable'
+  target:
+    description: 'Windows target to test (e.g., x86_64-pc-windows-gnu, i686-pc-windows-gnu, x86_64-pc-windows-msvc, i686-pc-windows-msvc)'
+    required: false
+    default: 'x86_64-pc-windows-gnu'
+  install-rust-toolchain:
+    description: 'Whether to install the specified Rust toolchain'
+    required: false
+    default: "true"
+  setup-rust-cache:
+    description: 'Whether to set up Rust caching'
+    required: false
+    default: "true"
+  use-xwin:
+    description: 'Whether to use cargo-xwin for MSVC targets'
+    required: false
+    default: "false"
+  use-binstall:
+    description: 'Whether to use cargo-binstall for installing components. If false, uses cargo install.'
+    required: false
+    default: "true"
+  install-binstall:
+    description: 'Whether to install cargo-binstall. If false, assumes it is already available in the environment.'
+    required: false
+    default: "true"
+  features:
+    description: 'Space-separated list of features to enable during testing'
+    required: false
+    default: ''
+  no-default-features:
+    description: 'Disable default features during testing'
+    required: false
+    default: "false"
+  additional-test-args:
+    description: 'Additional arguments to pass to the cargo test command'
+    required: false
+    default: ''
+  wine-version:
+    description: 'Wine version to install from WineHQ repository (e.g., stable, devel, staging)'
+    required: false
+    default: 'stable'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Extract features and additional test args for cache in friendly to cache-key manner
+      shell: bash
+      run: |
+        echo "SAFE_FEATURES=$(echo ${{ inputs.features }} | tr ',' '-' | tr -d ' ')" >> $GITHUB_ENV
+        SAFE_ADDITIONAL_TEST_ARGS=$(echo "${{ inputs.additional-test-args }}" | tr -dc '[:alnum:],_-' | tr ',' '-')
+        if [ -z "$SAFE_ADDITIONAL_TEST_ARGS" ]; then
+          SAFE_ADDITIONAL_TEST_ARGS="no-test-args"
+        fi
+        echo "SAFE_ADDITIONAL_TEST_ARGS=${SAFE_ADDITIONAL_TEST_ARGS}" >> $GITHUB_ENV
+
+    - name: Install Rust Toolchain
+      if: inputs.install-rust-toolchain == 'true'
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: ${{ inputs.rust-toolchain }}
+        cache: false
+
+    - name: Setup Rust Caching
+      if: inputs.setup-rust-cache == 'true'
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: test-${{ inputs.rust-toolchain }}-${{ inputs.rust-project-path }}-${{ inputs.target }}-${{ env.SAFE_FEATURES }}-${{ inputs.no-default-features }}-${{ inputs.use-xwin }}-${{ env.SAFE_ADDITIONAL_TEST_ARGS }}
+        cache-on-failure: true
+        cache-all-crates: true
+        cache-bin: ${{ inputs.use-binstall == 'true' && 'false' || 'true' }}
+        workspaces: |
+          ${{ inputs.rust-project-path }} -> target
+
+    - name: Install Wine
+      shell: bash
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo mkdir -pm755 /etc/apt/keyrings
+        sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+        sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+        sudo apt-get update
+        sudo apt-get install -y --install-recommends winehq-${{ inputs.wine-version }}
+        wine --version
+
+    - name: Install Windows Target
+      shell: bash
+      run: |
+        echo "Installing target: ${{ inputs.target }}"
+        rustup target add "${{ inputs.target }}"
+
+    - name: Install cargo-binstall
+      if: inputs.install-binstall == 'true'
+      uses: cargo-bins/cargo-binstall@main
+
+    - name: Install cargo-xwin (via binstall)
+      if: inputs.use-xwin == 'true' && inputs.use-binstall == 'true'
+      shell: bash
+      run: |
+        cargo +${{ inputs.rust-toolchain }} binstall cargo-xwin --no-confirm
+
+    - name: Install cargo-xwin (via cargo install)
+      if: inputs.use-xwin == 'true' && inputs.use-binstall == 'false'
+      shell: bash
+      run: |
+        cargo +${{ inputs.rust-toolchain }} install cargo-xwin
+
+    - name: Test GNU Target with Wine
+      shell: bash
+      working-directory: ${{ inputs.rust-project-path }}
+      if: contains(inputs.target, 'pc-windows-gnu')
+      run: |
+        echo "Testing GNU target: ${{ inputs.target }}"
+        cargo +${{ inputs.rust-toolchain }} test --target "${{ inputs.target }}" \
+          --features "${{ inputs.features }}" \
+          ${{ inputs.no-default-features == 'true' && '--no-default-features' || '' }} \
+          ${{ inputs.additional-test-args }}
+
+    - name: Test MSVC Target with cargo-xwin
+      if: inputs.use-xwin == 'true' && contains(inputs.target, 'pc-windows-msvc')
+      shell: bash
+      working-directory: ${{ inputs.rust-project-path }}
+      run: |
+        echo "Testing MSVC target: ${{ inputs.target }}"
+        cargo +${{ inputs.rust-toolchain }} xwin test --target "${{ inputs.target }}" \
+          --features "${{ inputs.features }}" \
+          ${{ inputs.no-default-features == 'true' && '--no-default-features' || '' }} \
+          ${{ inputs.additional-test-args }}

@@ -1,0 +1,64 @@
+name: Test Wine Action
+
+on:
+  push:
+    tags:
+      - "v1"
+      - "v1-test"
+    paths:
+      - "action.yml"
+      - ".github/workflows/test-workflow.yml"
+      - "test-project/**"
+  pull_request:
+    branches:
+      - master
+      - main
+    paths:
+      - "action.yml"
+      - ".github/workflows/test-workflow.yml"
+      - "test-project/**"
+  schedule:
+    - cron: "0 9 * * 1" # Weekly on Mondays at 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  test-wine-gnu-targets:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-pc-windows-gnu
+          - i686-pc-windows-gnu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+        with:
+          rust-project-path: "test-project"
+          rust-toolchain: stable
+          target: ${{ matrix.target }}
+
+  test-xwin-msvc-targets:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-pc-windows-msvc
+          - i686-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+        with:
+          rust-project-path: "test-project"
+          rust-toolchain: stable
+          target: ${{ matrix.target }}
+          use-xwin: true
+
+  test-nightly-toolchain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+        with:
+          rust-project-path: "test-project"
+          rust-toolchain: nightly
+          target: "x86_64-pc-windows-gnu"

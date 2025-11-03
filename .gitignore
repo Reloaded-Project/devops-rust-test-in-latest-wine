@@ -17,3 +17,7 @@ PROMPT-*
 
 # Reference folder
 rust-test-and-coverage/
+
+# Rust build artifacts
+target/
+Cargo.lock
