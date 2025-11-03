@@ -97,6 +97,12 @@ runs:
         sudo apt-get install -y --install-recommends winehq-${{ inputs.wine-version }}
         wine --version
 
+    - name: Install MinGW toolchain for GNU targets
+      if: contains(inputs.target, 'pc-windows-gnu')
+      shell: bash
+      run: |
+        sudo apt-get install -y mingw-w64
+
     - name: Install Windows Target
       shell: bash
       run: |
