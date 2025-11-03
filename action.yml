@@ -84,6 +84,14 @@ runs:
         cache-bin: ${{ inputs.use-binstall == 'true' && 'false' || 'true' }}
         workspaces: |
           ${{ inputs.rust-project-path }} -> target
+        cache-directories: |
+          ${{ github.workspace }}/.xwin-cache
+
+    - name: Set xwin cache directory
+      if: inputs.use-xwin == 'true'
+      shell: bash
+      run: |
+        echo "XWIN_CACHE_DIR=${{ github.workspace }}/.xwin-cache" >> $GITHUB_ENV
 
     - name: Install Wine
       shell: bash
