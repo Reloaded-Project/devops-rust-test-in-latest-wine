@@ -65,3 +65,15 @@ jobs:
           rust-toolchain: nightly
           target: "x86_64-pc-windows-gnu"
           additional-test-args: "-- --show-output"
+
+  test-wine-devel-gnu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+        with:
+          rust-project-path: "test-project"
+          rust-toolchain: stable
+          target: x86_64-pc-windows-gnu
+          wine-version: devel
+          additional-test-args: "-- --show-output"

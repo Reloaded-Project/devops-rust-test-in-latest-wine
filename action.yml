@@ -96,11 +96,15 @@ runs:
     - name: Install Wine
       shell: bash
       run: |
+        # Detect Ubuntu version codename
+        UBUNTU_CODENAME=$(lsb_release -cs)
+        echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
+        
         sudo dpkg --add-architecture i386
         sudo apt-get update
         sudo mkdir -pm755 /etc/apt/keyrings
         sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
-        sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+        sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/${UBUNTU_CODENAME}/winehq-${UBUNTU_CODENAME}.sources
         sudo apt-get update
         sudo apt-get install -y --install-recommends winehq-${{ inputs.wine-version }}
         wine --version
