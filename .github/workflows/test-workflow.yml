@@ -36,6 +36,7 @@ jobs:
           rust-project-path: "test-project"
           rust-toolchain: stable
           target: ${{ matrix.target }}
+          additional-test-args: "-- --show-output"
 
   test-xwin-msvc-targets:
     runs-on: ubuntu-latest
@@ -52,6 +53,7 @@ jobs:
           rust-toolchain: stable
           target: ${{ matrix.target }}
           use-xwin: true
+          additional-test-args: "-- --show-output"
 
   test-nightly-toolchain:
     runs-on: ubuntu-latest
@@ -62,3 +64,4 @@ jobs:
           rust-project-path: "test-project"
           rust-toolchain: nightly
           target: "x86_64-pc-windows-gnu"
+          additional-test-args: "-- --show-output"
