@@ -38,7 +38,13 @@ mod tests {
         // Function pointer type for wine_get_version
         type WineGetVersionFn = unsafe extern "C" fn() -> *const i8;
 
-        /// Prints the Wine version if running under Wine, using runtime resolution
+        /// Prints the Wine version if running under Wine, using runtime resolution.
+        ///
+        /// This function uses `println!` to output the Wine version. When running tests,
+        /// you must pass `-- --show-output` to see this output:
+        /// ```bash
+        /// cargo test -- --show-output
+        /// ```
         pub fn print_wine_version() {
             unsafe {
                 // Load ntdll.dll at runtime
@@ -88,6 +94,8 @@ mod tests {
 
     #[test]
     fn test_add() {
+        // NOTE: Wine version output uses println! and requires running tests with:
+        // cargo test -- --show-output
         print_wine_version();
         assert_eq!(add(2, 2), 4);
     }

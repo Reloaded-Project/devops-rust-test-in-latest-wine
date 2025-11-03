@@ -151,4 +151,5 @@ runs:
         cargo +${{ inputs.rust-toolchain }} xwin test --target "${{ inputs.target }}" \
           --features "${{ inputs.features }}" \
           ${{ inputs.no-default-features == 'true' && '--no-default-features' || '' }} \
+          --xwin-arch "x86,x86_64,aarch64"
           ${{ inputs.additional-test-args }}
