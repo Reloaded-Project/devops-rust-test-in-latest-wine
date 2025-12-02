@@ -1,18 +1,9 @@
 name: Test Wine Action
 
 on:
-  push:
-    tags:
-      - "v1"
-      - "v1-test"
-    paths:
-      - "action.yml"
-      - ".github/workflows/test-workflow.yml"
-      - "test-project/**"
   pull_request:
     branches:
-      - master
-      - main
+      - v1-master
     paths:
       - "action.yml"
       - ".github/workflows/test-workflow.yml"
@@ -31,7 +22,7 @@ jobs:
           - i686-pc-windows-gnu
     steps:
       - uses: actions/checkout@v4
-      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+      - uses: ./
         with:
           rust-project-path: "test-project"
           rust-toolchain: stable
@@ -47,7 +38,7 @@ jobs:
           - i686-pc-windows-msvc
     steps:
       - uses: actions/checkout@v4
-      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+      - uses: ./
         with:
           rust-project-path: "test-project"
           rust-toolchain: stable
@@ -59,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+      - uses: ./
         with:
           rust-project-path: "test-project"
           rust-toolchain: nightly
@@ -70,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Reloaded-Project/devops-rust-test-in-latest-wine@v1-test
+      - uses: ./
         with:
           rust-project-path: "test-project"
           rust-toolchain: stable
