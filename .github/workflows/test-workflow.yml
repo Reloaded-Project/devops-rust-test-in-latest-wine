@@ -21,7 +21,7 @@ jobs:
           - x86_64-pc-windows-gnu
           - i686-pc-windows-gnu
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           rust-project-path: "test-project"
@@ -37,7 +37,7 @@ jobs:
           - x86_64-pc-windows-msvc
           - i686-pc-windows-msvc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           rust-project-path: "test-project"
@@ -49,7 +49,7 @@ jobs:
   test-nightly-toolchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           rust-project-path: "test-project"
@@ -60,7 +60,7 @@ jobs:
   test-wine-devel-gnu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           rust-project-path: "test-project"
