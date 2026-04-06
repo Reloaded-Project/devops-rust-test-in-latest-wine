@@ -124,10 +124,14 @@ runs:
     - name: Install cargo-binstall
       if: inputs.install-binstall == 'true'
       uses: cargo-bins/cargo-binstall@main
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Install cargo-xwin (via binstall)
       if: inputs.use-xwin == 'true' && inputs.use-binstall == 'true'
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         cargo +${{ inputs.rust-toolchain }} binstall cargo-xwin --no-confirm
 
